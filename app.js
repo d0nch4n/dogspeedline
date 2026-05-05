@@ -41,12 +41,17 @@
     return list;
   }
 
+  // True when the viewport switches to the vertical mobile/tablet-portrait layout.
+  const verticalQuery = window.matchMedia("(max-width: 900px)");
+  const isVertical = () => verticalQuery.matches;
+
   // Render the timeline.
-  // Strategy: use a flex-like layout where every dog is given an equal slot
-  // along the timeline. The dogs are sorted slowest → fastest, so the
-  // gradient line (green → red) behind them visually communicates "speed up".
-  // We alternate Y position (above / below the line) so adjacent names don't
-  // collide and the layout stays compact.
+  // Strategy: each dog gets an equal slot along the speedline. Sorted slowest→fastest
+  // so the gradient (green→red) reads as "accelerate". Slots alternate on the
+  // two sides of the line so adjacent names don't collide.
+  //   • Desktop: line is HORIZONTAL, cards alternate top/bottom, scroll is X.
+  //   • Mobile/tablet portrait (≤900px): line is VERTICAL, cards alternate left/right,
+  //     scroll is the natural document Y.
   function renderTimeline() {
     const filtered = applyFilter(breeds.slice()).sort(
       (a, b) => a.speed - b.speed || a.nameIt.localeCompare(b.nameIt, "it")
@@ -59,25 +64,37 @@
     if (!filtered.length) {
       dogsEl.innerHTML = `<p class="empty-msg">Nessuna razza in questa fascia.</p>`;
       ticksEl.innerHTML = "";
-      trackEl.style.width = "auto";
+      trackEl.style.width = "";
+      trackEl.style.height = "";
       return;
     }
 
-    // Layout: each card occupies a fixed column.
-    // Column width is driven by CSS (--col-w) so it adapts to viewport size.
-    const cssVar = getComputedStyle(document.documentElement).getPropertyValue("--col-w");
-    const columnW = parseFloat(cssVar) || 120;
-    const padding = 48;
-    const innerW = filtered.length * columnW;
-    const totalW = innerW + padding * 2;
-    trackEl.style.width = totalW + "px";
+    const vertical = isVertical();
+    const varName = vertical ? "--row-h" : "--col-w";
+    const fallback = vertical ? 110 : 120;
+    const cssVar = getComputedStyle(document.documentElement).getPropertyValue(varName);
+    const columnSize = parseFloat(cssVar) || fallback;
+    const padding = vertical ? 40 : 48;
+    const inner = filtered.length * columnSize;
+    const total = inner + padding * 2;
+
+    if (vertical) {
+      trackEl.style.height = total + "px";
+      trackEl.style.width = "";
+    } else {
+      trackEl.style.width = total + "px";
+      trackEl.style.height = "";
+    }
 
     // --- Cards ---
     const html = filtered.map((d, i) => {
-      const x = padding + i * columnW + columnW / 2;
-      const row = i % 2 === 0 ? "row-top" : "row-bottom";
+      const pos = padding + i * columnSize + columnSize / 2;
+      const row = vertical
+        ? (i % 2 === 0 ? "row-left" : "row-right")
+        : (i % 2 === 0 ? "row-top"  : "row-bottom");
+      const positionStyle = vertical ? `top:${pos}px` : `left:${pos}px`;
       return `
-        <div class="dog-slot ${row}" style="left:${x}px"
+        <div class="dog-slot ${row}" style="${positionStyle}"
              data-id="${d.id}" tabindex="0" role="button"
              aria-label="${escapeHtml(d.nameIt)}, ${d.speed} km per ora">
           <span class="connector"></span>
@@ -94,24 +111,28 @@
     }).join("");
     dogsEl.innerHTML = html;
 
-    // --- Ticks: place a small tick at the actual proportional speed
-    //     position so the timeline still encodes "real" speed under the line. ---
+    // --- Ticks at the real proportional speed positions along the line. ---
     const sMin = filtered[0].speed;
     const sMax = filtered[filtered.length - 1].speed;
     const span = Math.max(1, sMax - sMin);
-    const tickStart = Math.ceil(sMin / 10) * 10;
-    const tickEnd = Math.floor(sMax / 10) * 10;
+    const tickStep = vertical ? 20 : 10;     // meno tacche su mobile, restano leggibili
+    const tickStart = Math.ceil(sMin / tickStep) * tickStep;
+    const tickEnd   = Math.floor(sMax / tickStep) * tickStep;
+    const tickStyle = (p) => vertical ? `top:${p}px` : `left:${p}px`;
     const ticksHtml = [];
-    for (let s = tickStart; s <= tickEnd; s += 10) {
-      const x = padding + ((s - sMin) / span) * innerW;
-      ticksHtml.push(`<div class="tick" style="left:${x}px"><span>${s} km/h</span></div>`);
+    for (let s = tickStart; s <= tickEnd; s += tickStep) {
+      const p = padding + ((s - sMin) / span) * inner;
+      ticksHtml.push(`<div class="tick" style="${tickStyle(p)}"><span>${s} km/h</span></div>`);
     }
-    // Always show the min and max as well.
-    if (sMin !== tickStart) {
-      ticksHtml.push(`<div class="tick" style="left:${padding}px"><span>${sMin} km/h</span></div>`);
-    }
-    if (sMax !== tickEnd) {
-      ticksHtml.push(`<div class="tick" style="left:${padding + innerW}px"><span>${sMax} km/h</span></div>`);
+    // Su mobile (verticale) le card di estremità sono già ben visibili in cima/fondo,
+    // quindi non aggiungiamo le tacche min/max — eviterebbero solo di sovrapporsi alle card.
+    if (!vertical) {
+      if (sMin !== tickStart) {
+        ticksHtml.push(`<div class="tick" style="${tickStyle(padding)}"><span>${sMin} km/h</span></div>`);
+      }
+      if (sMax !== tickEnd) {
+        ticksHtml.push(`<div class="tick" style="${tickStyle(padding + inner)}"><span>${sMax} km/h</span></div>`);
+      }
     }
     ticksEl.innerHTML = ticksHtml.join("");
   }

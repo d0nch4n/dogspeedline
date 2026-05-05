@@ -491,34 +491,124 @@ a { color: var(--purple-dark); }
 }
 .site-footer a { color: var(--purple-dark); }
 
-/* ── Responsive: tablet in portrait / mobile grande ── */
-@media (max-width: 820px) {
-  :root { --col-w: 108px; }
-  .header { padding: 20px 20px 42px; }
-  .legend-bar { width: 150px; }
+/* ── Responsive: speedline VERTICALE su tablet/smartphone ──
+   Sotto i 900px ribaltiamo la timeline di 90°: la linea va dall'alto (lenti)
+   verso il basso (veloci), le card si alternano a sinistra/destra del binario
+   centrale, e lo scroll diventa quello verticale del browser — naturale per il pollice. */
+@media (max-width: 900px) {
+  :root { --row-h: 110px; }
+
+  .header { padding: 18px 18px 38px; }
+  .legend-bar { width: 140px; }
+  .filter-bar { gap: 8px; padding: 6px 14px 12px; }
+  .filter-btn { padding: 8px 14px; font-size: 0.85rem; }
+
+  .timeline-wrap { padding: 0 0 24px; }
+  .timeline-scroll {
+    overflow-x: hidden;
+    overflow-y: visible;
+    padding: 8px 16px 24px;
+  }
+  .timeline-track {
+    width: 100%;
+    height: auto;        /* altezza pixel impostata da JS */
+    margin: 0 auto;
+    max-width: 720px;
+  }
+
+  /* La pista diventa verticale, gradiente verde→rosso dall'alto al basso */
+  .timeline-line {
+    left: 50%; right: auto;
+    top: 0; bottom: 0;
+    width: 7px;
+    height: 100%;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, #6dcb6f 0%, #ffd84d 35%, #ff9b46 70%, #e84d3a 100%);
+  }
+
+  /* Tacche velocità: pillole bianche centrate sul binario, sempre in primo
+     piano rispetto alle card così restano leggibili anche se si incrociano. */
+  .timeline-ticks {
+    left: 50%; right: auto;
+    top: 0; bottom: 0;
+    width: 0;
+    height: 100%;
+    transform: translateX(-50%);
+    z-index: 3;
+  }
+  .tick {
+    position: absolute;
+    transform: translate(-50%, -50%);
+  }
+  .tick::before { display: none; }
+  .tick span {
+    background: white;
+    padding: 2px 10px;
+    border-radius: 999px;
+    border: 2px solid rgba(124,92,231,0.25);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+    font-family: 'Fredoka One', cursive;
+    font-size: 0.68rem;
+    color: var(--ink-soft);
+  }
+
+  /* Slot: centrata verticalmente sul proprio top, alternata sx/dx */
+  .dog-slot {
+    width: calc(50% - 30px);
+    max-width: 180px;
+    transform: translateY(-50%);
+  }
+  .dog-slot.row-left  { right: 50%; margin-right: 22px; }
+  .dog-slot.row-right { left:  50%; margin-left:  22px; }
+
+  /* Connettore: trattino orizzontale dalla card al binario */
+  .dog-slot .connector {
+    left: auto;
+    width: 22px;
+    height: 2px;
+    top: 50%;
+    background: rgba(0,0,0,0.20);
+    transform: translateY(-50%);
+  }
+  .dog-slot.row-left  .connector { left: 100%;  right: auto; }
+  .dog-slot.row-right .connector { right: 100%; left: auto; }
+
+  /* Pallino: appoggiato sul binario alla stessa quota della card */
+  .dog-slot .dot {
+    left: auto;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .dog-slot.row-left  .dot { left:  calc(100% + 15px); right: auto; }
+  .dog-slot.row-right .dot { right: calc(100% + 15px); left:  auto; }
+
+  /* Card più compatta */
+  .dog-card { padding: 10px 8px 8px; }
+  .dog-photo-wrap { width: 64px; height: 64px; }
+  .dog-name { font-size: 0.78rem; }
+  .dog-speed-badge { font-size: 0.7rem; padding: 2px 8px; }
 }
 
-/* ── Responsive: smartphone ── */
-@media (max-width: 600px) {
-  :root { --col-w: 96px; }
-  .legend-bar { width: 130px; }
-  .filter-btn { padding: 8px 14px; font-size: 0.82rem; }
+/* Tablet portrait — più respiro per le card (iPad ~768–820px) */
+@media (min-width: 600px) and (max-width: 900px) {
+  :root { --row-h: 140px; }
+  .dog-slot { max-width: 220px; }
+  .dog-photo-wrap { width: 80px; height: 80px; }
+  .dog-name { font-size: 0.95rem; line-height: 1.2; }
+  .dog-speed-badge { font-size: 0.85rem; padding: 3px 11px; }
+}
 
-  .timeline-track { height: 290px; }
-  .timeline-line { top: 128px; height: 6px; }
-  .timeline-ticks { top: 137px; height: 20px; }
-
-  .dog-slot { width: 90px; }
-  .dog-slot.row-bottom { top: 160px; }
-  .dog-slot.row-top    .connector { top: 116px; height: 16px; }
-  .dog-slot.row-bottom .connector { top: -32px; height: 32px; }
-  .dog-slot.row-top    .dot { top: 124px; }
-  .dog-slot.row-bottom .dot { top: -7px; }
-
-  .dog-photo-wrap { width: 58px; height: 58px; }
-  .dog-name { font-size: 0.74rem; }
+/* Smartphone piccoli (≤380px) */
+@media (max-width: 380px) {
+  :root { --row-h: 100px; }
+  .dog-slot.row-left  { margin-right: 16px; }
+  .dog-slot.row-right { margin-left:  16px; }
+  .dog-slot .connector { width: 16px; }
+  .dog-slot.row-left  .dot { left:  calc(100% + 9px); }
+  .dog-slot.row-right .dot { right: calc(100% + 9px); }
+  .dog-photo-wrap { width: 56px; height: 56px; }
+  .dog-name { font-size: 0.72rem; }
   .dog-speed-badge { font-size: 0.66rem; padding: 2px 7px; }
-  .tick span { font-size: 0.68rem; }
 }
 
 /* ── Accessibilità: rispetta chi disattiva le animazioni ── */
