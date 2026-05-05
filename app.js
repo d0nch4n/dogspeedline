@@ -227,8 +227,14 @@
 
   // Re-render on resize (debounced) so layout follows viewport breakpoints,
   // e.g. when the tablet is rotated between portrait and landscape.
+  // IMPORTANTE: ri-renderiamo solo se cambia la LARGHEZZA. Su mobile la barra URL
+  // del browser appare/scompare durante lo scroll generando resize events di sola
+  // altezza: rigenerare il DOM in quei casi farebbe lampeggiare tutte le foto.
+  let lastWidth = window.innerWidth;
   let resizeTimer;
   window.addEventListener("resize", () => {
+    if (window.innerWidth === lastWidth) return;
+    lastWidth = window.innerWidth;
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(renderTimeline, 200);
   });
