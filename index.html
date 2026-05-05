@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enciclopedia Canina — 100 razze ordinate per velocità</title>
+  <meta name="description" content="Cento razze di cani disposte su una timeline dal più lento al più veloce. Foto, origini, carattere e curiosità." />
+  <meta name="theme-color" content="#7c5ce7" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50' y='70' text-anchor='middle' font-size='80'%3E%F0%9F%90%95%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- decorative paw prints -->
+  <div class="paw-trail" aria-hidden="true">
+    <span class="paw-print" style="--r:15deg; top:12%; left:3%;">🐾</span>
+    <span class="paw-print" style="--r:-20deg; top:28%; right:4%;">🐾</span>
+    <span class="paw-print" style="--r:30deg; bottom:22%; left:7%;">🐾</span>
+    <span class="paw-print" style="--r:-10deg; bottom:35%; right:6%;">🐾</span>
+    <span class="paw-print" style="--r:45deg; top:60%; left:45%;">🐾</span>
+  </div>
+
+  <header class="header">
+    <div class="header-clouds" aria-hidden="true">
+      <div class="cloud cloud-1"></div>
+      <div class="cloud cloud-2"></div>
+      <div class="cloud cloud-3"></div>
+    </div>
+    <h1 class="header-title">
+      <span class="header-paw">🐾</span> Enciclopedia Canina
+    </h1>
+    <p class="header-subtitle">Scopri i cani di razza ordinati per velocità!</p>
+  </header>
+
+  <main>
+    <!-- legend -->
+    <div class="legend">
+      <span class="legend-label legend-slow">Più lenti 🐢</span>
+      <div class="legend-bar"></div>
+      <span class="legend-label legend-fast">Più veloci 🚀</span>
+    </div>
+
+    <!-- filter -->
+    <div class="filter-bar" id="filter-bar">
+      <button class="filter-btn active" data-filter="all" type="button">🐕 Tutti</button>
+      <button class="filter-btn" data-filter="slow" type="button">🐢 Sotto 30 km/h</button>
+      <button class="filter-btn" data-filter="medium" type="button">🏃 30–50 km/h</button>
+      <button class="filter-btn" data-filter="fast" type="button">🚀 Sopra 50 km/h</button>
+    </div>
+
+    <p class="section-title" id="section-title">Caricamento…</p>
+
+    <!-- timeline -->
+    <div class="timeline-wrap">
+      <div class="timeline-scroll">
+        <div class="timeline-track" id="timeline-track">
+          <div class="timeline-line" aria-hidden="true"></div>
+          <div class="timeline-ticks" id="timeline-ticks" aria-hidden="true"></div>
+          <div class="timeline-dogs" id="timeline-dogs"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- modal -->
+  <div class="modal-overlay" id="modal-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close" id="modal-close" aria-label="Chiudi">×</button>
+      <div class="modal-content" id="modal-content"></div>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <p>Foto da <a href="https://commons.wikimedia.org" rel="noopener" target="_blank">Wikimedia Commons</a>.
+       Sito statico — codice e dati su GitHub.</p>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
