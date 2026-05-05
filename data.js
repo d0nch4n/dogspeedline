@@ -1899,5 +1899,24 @@ window.BREEDS = [
     "size": "Medio",
     "lifespan": "15–17 anni",
     "funFact": "Un tartufo trovato da un Lagotto può valere migliaia di euro! 💰"
+  },
+  {
+    "id": 101,
+    "nameIt": "Shiba Inu",
+    "nameEn": "Shiba Inu",
+    "photo": "photos/shiba-inu.jpg",
+    "speed": 35,
+    "origin": "Giappone",
+    "originFlag": "🇯🇵",
+    "description": "Lo Shiba Inu è la più piccola delle razze native giapponesi, allevato originariamente per cacciare nei boschi montani. Ha un carattere indipendente, vivace e una postura fiera che ricorda una piccola volpe.",
+    "traits": [
+      "Indipendente",
+      "Vivace",
+      "Fedele",
+      "Pulito"
+    ],
+    "size": "Piccolo–Medio",
+    "lifespan": "12–15 anni",
+    "funFact": "Lo Shiba Inu è famoso in tutto il mondo per il suo 'sorriso' e per essere diventato il simbolo del meme Doge! 🐶"
   }
 ];

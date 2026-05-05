@@ -27,18 +27,32 @@
   const overlay = $("#modal-overlay");
   const modalContent = $("#modal-content");
   const modalCloseBtn = $("#modal-close");
+  const searchInput = $("#search-input");
+  const searchClearBtn = $("#search-clear");
 
   let currentFilter = "all";
+  let currentSearch = "";
+  // ID dell'ultima razza aperta nella scheda; usato per tornare indietro
+  // dalla "vista paese" alla scheda di partenza.
+  let lastBreedId = null;
 
   // Helpers.
   const escapeHtml = (s) => String(s ?? "").replace(/[&<>"']/g,
     (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
   function applyFilter(list) {
-    if (currentFilter === "slow")   return list.filter((d) => d.speed < 30);
-    if (currentFilter === "medium") return list.filter((d) => d.speed >= 30 && d.speed < 50);
-    if (currentFilter === "fast")   return list.filter((d) => d.speed >= 50);
-    return list;
+    let result = list;
+    if (currentFilter === "slow")        result = result.filter((d) => d.speed < 30);
+    else if (currentFilter === "medium") result = result.filter((d) => d.speed >= 30 && d.speed < 50);
+    else if (currentFilter === "fast")   result = result.filter((d) => d.speed >= 50);
+    if (currentSearch) {
+      const q = currentSearch.toLowerCase();
+      result = result.filter((d) =>
+        (d.nameIt || "").toLowerCase().includes(q) ||
+        (d.nameEn || "").toLowerCase().includes(q)
+      );
+    }
+    return result;
   }
 
   // True when the viewport switches to the vertical mobile/tablet-portrait layout.
@@ -57,12 +71,16 @@
       (a, b) => a.speed - b.speed || a.nameIt.localeCompare(b.nameIt, "it")
     );
 
-    titleEl.textContent = currentFilter === "all"
+    const noFilters = currentFilter === "all" && !currentSearch;
+    titleEl.textContent = noFilters
       ? `${filtered.length} razze • dal più lento al più veloce — clicca un cane per scoprirlo! 👆`
-      : `${filtered.length} razze trovate — clicca un cane per scoprirlo! 👆`;
+      : `${filtered.length} ${filtered.length === 1 ? "razza trovata" : "razze trovate"} — clicca un cane per scoprirlo! 👆`;
 
     if (!filtered.length) {
-      dogsEl.innerHTML = `<p class="empty-msg">Nessuna razza in questa fascia.</p>`;
+      const msg = currentSearch
+        ? `Nessuna razza trovata per “${escapeHtml(currentSearch)}”.`
+        : "Nessuna razza in questa fascia.";
+      dogsEl.innerHTML = `<p class="empty-msg">${msg}</p>`;
       ticksEl.innerHTML = "";
       trackEl.style.width = "";
       trackEl.style.height = "";
@@ -141,7 +159,14 @@
   function openModal(id) {
     const d = breeds.find((x) => x.id === id);
     if (!d) return;
+    lastBreedId = d.id;
     const showOriginal = d.nameEn && d.nameEn !== d.nameIt;
+    const flagBtn = d.origin
+      ? `<button class="chip flag clickable" type="button" data-action="origin" data-origin="${escapeHtml(d.origin)}" title="Vedi altri cani da ${escapeHtml(d.origin)}">
+           <span class="flag">${escapeHtml(d.originFlag || "")}</span> ${escapeHtml(d.origin)}
+           <span class="chevron" aria-hidden="true">›</span>
+         </button>`
+      : `<span class="chip flag"><span class="flag">${escapeHtml(d.originFlag || "")}</span> ${escapeHtml(d.origin || "—")}</span>`;
     modalContent.innerHTML = `
       <div class="modal-hero">
         <img src="${escapeHtml(d.photo)}" alt="${escapeHtml(d.nameIt)}" />
@@ -152,7 +177,7 @@
 
         <div class="modal-meta">
           <span class="chip speed">⚡ ${d.speed} km/h</span>
-          <span class="chip flag"><span class="flag">${escapeHtml(d.originFlag || "")}</span> ${escapeHtml(d.origin || "")}</span>
+          ${flagBtn}
           <span class="chip">📏 ${escapeHtml(d.size || "—")}</span>
           <span class="chip">⏳ ${escapeHtml(d.lifespan || "—")}</span>
         </div>
@@ -177,6 +202,40 @@
     document.body.style.overflow = "hidden";
     modalCloseBtn.focus();
     location.hash = `#/breed/${d.id}`;
+  }
+
+  // Vista "tutti i cani di una stessa nazione" — aperta cliccando il chip bandiera.
+  function openCountryView(originName) {
+    const list = breeds
+      .filter((b) => b.origin === originName)
+      .sort((a, b) => a.speed - b.speed);
+    if (!list.length) return;
+    const flag = list[0].originFlag || "";
+    const backLabel = lastBreedId
+      ? `← Torna a ${escapeHtml(breeds.find((b) => b.id === lastBreedId)?.nameIt || "")}`
+      : "← Indietro";
+    modalContent.innerHTML = `
+      <div class="modal-body country-view">
+        <button class="back-btn" id="modal-back" type="button">${backLabel}</button>
+        <h2 id="modal-title">Cani originari di ${escapeHtml(originName)} <span class="country-flag">${escapeHtml(flag)}</span></h2>
+        <p class="modal-original">${list.length} ${list.length === 1 ? "razza" : "razze"} — clicca per i dettagli</p>
+        <div class="country-grid">
+          ${list.map((b) => `
+            <button class="country-card card-${b.bucket}" data-id="${b.id}" type="button"
+                    aria-label="${escapeHtml(b.nameIt)}, ${b.speed} km/h">
+              <div class="country-card-photo">
+                <img src="${escapeHtml(b.photo)}" alt="${escapeHtml(b.nameIt)}" loading="lazy" decoding="async" />
+              </div>
+              <div class="country-card-name">${escapeHtml(b.nameIt)}</div>
+              <span class="country-card-badge speed-${b.bucket}">${b.speed} km/h</span>
+            </button>
+          `).join("")}
+        </div>
+      </div>
+    `;
+    overlay.hidden = false;
+    document.body.style.overflow = "hidden";
+    modalCloseBtn.focus();
   }
 
   function closeModal() {
@@ -217,6 +276,42 @@
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !overlay.hidden) closeModal();
+  });
+
+  // Delegation: chip bandiera → vista paese; card della vista paese → scheda razza;
+  // bottone "indietro" della vista paese → torna alla scheda da cui sei venuto.
+  modalContent.addEventListener("click", (e) => {
+    const flagBtn = e.target.closest('[data-action="origin"]');
+    if (flagBtn) {
+      openCountryView(flagBtn.dataset.origin);
+      return;
+    }
+    const countryCard = e.target.closest(".country-card[data-id]");
+    if (countryCard) {
+      openModal(parseInt(countryCard.dataset.id, 10));
+      return;
+    }
+    const backBtn = e.target.closest("#modal-back");
+    if (backBtn) {
+      if (lastBreedId) openModal(lastBreedId);
+      else closeModal();
+    }
+  });
+
+  // Search: filtra in tempo reale (debounce per non rifare il render ad ogni tasto).
+  let searchTimer;
+  searchInput.addEventListener("input", (e) => {
+    currentSearch = e.target.value.trim();
+    searchClearBtn.hidden = currentSearch.length === 0;
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(renderTimeline, 120);
+  });
+  searchClearBtn.addEventListener("click", () => {
+    searchInput.value = "";
+    currentSearch = "";
+    searchClearBtn.hidden = true;
+    renderTimeline();
+    searchInput.focus();
   });
 
   window.addEventListener("hashchange", () => {
