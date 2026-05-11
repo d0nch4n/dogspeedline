@@ -1335,7 +1335,7 @@ window.BREEDS = [
     "nameIt": "Lagotto Romagnolo",
     "nameEn": "Lagotto Romagnolo",
     "photo": "photos/lagotto-romagnolo.jpg",
-    "speed": 30,
+    "speed": 36,
     "origin": "Italia",
     "originFlag": "🇮🇹",
     "description": "Il Lagotto Romagnolo è il maestro cacciatore di tartufi! Con il suo naso eccezionale trova i preziosi tartufi nascosti sottoterra.",
@@ -1883,25 +1883,6 @@ window.BREEDS = [
   },
   {
     "id": 100,
-    "nameIt": "Lagotto Romagnolo",
-    "nameEn": "Lagotto Romagnolo",
-    "photo": "photos/lagotto-romagnolo.jpg",
-    "speed": 32,
-    "origin": "Italia",
-    "originFlag": "🇮🇹",
-    "description": "Il Lagotto Romagnolo nasce nelle valli del Romagnolo. È il miglior cercatore di tartufi al mondo, con un olfatto eccezionale.",
-    "traits": [
-      "Curioso",
-      "Intelligente",
-      "Fedele",
-      "Energico"
-    ],
-    "size": "Medio",
-    "lifespan": "15–17 anni",
-    "funFact": "Un tartufo trovato da un Lagotto può valere migliaia di euro! 💰"
-  },
-  {
-    "id": 101,
     "nameIt": "Shiba Inu",
     "nameEn": "Shiba Inu",
     "photo": "photos/shiba-inu.jpg",
